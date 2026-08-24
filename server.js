@@ -8,10 +8,8 @@ const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
-// Helper function to introduce a delay for rate limiting
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// Format phone number to standard 254XXXXXXXXX
 function formatPhone(phone) {
   let cleaned = phone.replace(/\D/g, "");
   if (cleaned.startsWith("0")) {
@@ -40,32 +38,39 @@ app.post("/api/bulk-stk", async (req, res) => {
     return res.status(500).json({ error: "Server missing Pesatide configuration." });
   }
 
-  // Set response header for Server-Sent Events (SSE) stream
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
   res.setHeader("Connection", "keep-alive");
 
   const total = phoneNumbers.length;
+  const cleanPrefix = (referencePrefix || "ORD").replace(/[^a-zA-Z0-9]/g, "");
 
   for (let i = 0; i < total; i++) {
     const rawPhone = phoneNumbers[i];
     const formattedPhone = formatPhone(rawPhone);
-    const orderRef = `${referencePrefix || "ORDER"}-${Date.now()}-${i + 1}`;
+    const internalOrderRef = `${referencePrefix || "ORDER"}-${Date.now()}-${i + 1}`;
+    
+    // Safaricom M-Pesa Constraints:
+    // accountReference: Max 12 chars
+    // description: Max 13 chars
+    const shortAccountRef = `${cleanPrefix}${i + 1}${Date.now().toString().slice(-6)}`.slice(0, 12);
+    const shortDesc = (description || "Order Payment").slice(0, 13);
 
     const payload = {
-      reference: orderRef,
+      reference: internalOrderRef,
       amount: Number(amount),
       phone: formattedPhone,
       routeId: routeId,
-      accountReference: orderRef,
-      description: description || "Bulk STK Payment"
+      accountReference: shortAccountRef,
+      description: shortDesc
     };
 
     let logResult = {
       index: i + 1,
       total,
       phone: formattedPhone,
-      reference: orderRef,
+      reference: internalOrderRef,
+      accountReference: shortAccountRef,
       status: "FAILED",
       message: ""
     };
@@ -76,7 +81,7 @@ app.post("/api/bulk-stk", async (req, res) => {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${apiKey}`,
-          "Idempotency-Key": `idemp-${orderRef}`
+          "Idempotency-Key": `idemp-${internalOrderRef}`
         },
         body: JSON.stringify(payload)
       });
@@ -95,10 +100,9 @@ app.post("/api/bulk-stk", async (req, res) => {
       logResult.message = err.message || "Network error communicating with Pesatide API.";
     }
 
-    // Push log to client browser
     res.write(`data: ${JSON.stringify(logResult)}\n\n`);
 
-    // Rate Limiting: 6 requests per minute = 10,000 ms interval between requests
+    // Rate limiting: 6 requests/min = 10 sec delay between requests
     if (i < total - 1) {
       await sleep(10000);
     }
