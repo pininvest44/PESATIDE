@@ -35,8 +35,12 @@
         <input type="number" id="amount" value="10" min="1" required />
       </div>
       <div class="form-group">
-        <label>Reference Prefix</label>
-        <input type="text" id="referencePrefix" value="BULK-ORDER" required />
+        <label>Reference Prefix (Keep short, max 5 letters)</label>
+        <input type="text" id="referencePrefix" value="ORD" maxlength="5" required />
+      </div>
+      <div class="form-group">
+        <label>Description (Optional, max 13 chars on M-Pesa prompt)</label>
+        <input type="text" id="description" value="Bulk Payment" maxlength="13" />
       </div>
       <button type="submit" id="submitBtn">Start Bulk STK Push</button>
     </form>
