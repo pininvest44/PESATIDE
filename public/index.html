@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pesatide Bulk STK Push</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f4f6f8; margin: 0; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    h2 { margin-top: 0; color: #111827; }
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-weight: 600; margin-bottom: 6px; color: #374151; }
+    input, textarea { width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+    textarea { height: 110px; resize: vertical; }
+    .note { font-size: 12px; color: #6b7280; margin-top: 4px; }
+    button { background: #059669; color: white; border: none; padding: 12px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; width: 100%; }
+    button:disabled { background: #9ca3af; cursor: not-allowed; }
+    .logs { margin-top: 24px; background: #1e293b; color: #f8fafc; padding: 16px; border-radius: 6px; font-family: monospace; height: 260px; overflow-y: auto; }
+    .log-entry { margin-bottom: 6px; border-bottom: 1px solid #334155; padding-bottom: 4px; }
+    .SUCCESS { color: #34d399; }
+    .FAILED { color: #f87171; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Bulk STK Push Dispatcher</h2>
+    <form id="stkForm">
+      <div class="form-group">
+        <label>Phone Numbers (One per line or comma-separated)</label>
+        <textarea id="phoneNumbers" placeholder="0712345678&#10;254789012345" required></textarea>
+        <div class="note">Rate limited to 6 requests/minute (1 request every 10 seconds).</div>
+      </div>
+      <div class="form-group">
+        <label>Amount (KES)</label>
+        <input type="number" id="amount" value="10" min="1" required />
+      </div>
+      <div class="form-group">
+        <label>Reference Prefix</label>
+        <input type="text" id="referencePrefix" value="BULK-ORDER" required />
+      </div>
+      <button type="submit" id="submitBtn">Start Bulk STK Push</button>
+    </form>
+
+    <h3>Execution Logs</h3>
+    <div class="logs" id="logsContainer">Logs will appear here when process starts...</div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
