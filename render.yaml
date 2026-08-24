@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: pesatide-bulk-stk
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PESATIDE_API_KEY
+        sync: false
+      - key: PESATIDE_ROUTE_ID
+        sync: false
